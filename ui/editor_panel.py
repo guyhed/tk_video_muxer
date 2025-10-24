@@ -33,6 +33,9 @@ class EditorPanel:
                                    highlightthickness=0, padx=15, pady=6,
                                    activebackground='#2980b9', activeforeground='white')
         add_editor_btn.pack(side="left")
+        # Add hover effect - darken background, keep text color
+        add_editor_btn.bind('<Enter>', lambda e: add_editor_btn.config(bg='#2980b9'))
+        add_editor_btn.bind('<Leave>', lambda e: add_editor_btn.config(bg=accent_color))
         
         # Create a canvas with scrollbar for editors
         canvas = tk.Canvas(self.frame, bg=bg_color, highlightthickness=0, bd=0)

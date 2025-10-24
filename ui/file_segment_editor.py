@@ -46,17 +46,23 @@ class FileSegmentEditor:
         browse_btn = tk.Button(file_row, text="Browse", command=self.browse_file, 
                               bg=self.accent_color, fg='white', bd=0, relief=tk.FLAT,
                               font=('Segoe UI', 9, 'bold'), cursor='hand2',
-                              padx=15, pady=5, activebackground='#2980b9')
+                              padx=15, pady=5, activebackground='#2980b9', activeforeground='white')
         browse_btn.pack(side=tk.LEFT, padx=10, pady=5)
+        # Add hover effect
+        browse_btn.bind('<Enter>', lambda e: browse_btn.config(bg='#2980b9'))
+        browse_btn.bind('<Leave>', lambda e: browse_btn.config(bg=self.accent_color))
         
         # Remove editor button with red X
         remove_btn = tk.Button(header_frame, text="✕", command=self.remove_editor, 
                               bg=self.bg_color, fg='#e74c3c', font=('Arial', 18, 'bold'),
                               width=2, height=1, bd=0, relief=tk.FLAT,
                               highlightthickness=0, padx=0, pady=0,
-                              activebackground=self.bg_color, activeforeground='#c0392b',
+                              activebackground='#1e1e1e', activeforeground='#e74c3c',
                               cursor='hand2')
         remove_btn.pack(side=tk.RIGHT, padx=5, pady=5)
+        # Add hover effect
+        remove_btn.bind('<Enter>', lambda e: remove_btn.config(bg='#1e1e1e'))
+        remove_btn.bind('<Leave>', lambda e: remove_btn.config(bg=self.bg_color))
 
         # Time segments
         self.segments_frame = tk.Frame(self.frame, bg=self.bg_color, bd=0)
@@ -66,8 +72,11 @@ class FileSegmentEditor:
         add_btn = tk.Button(self.frame, text="+ Add Segment", command=self.add_segment, 
                            bg='#27ae60', fg='white', bd=0, relief=tk.FLAT,
                            font=('Segoe UI', 9, 'bold'), cursor='hand2',
-                           padx=15, pady=5, activebackground='#229954')
+                           padx=15, pady=5, activebackground='#229954', activeforeground='white')
         add_btn.pack(pady=10, padx=15)
+        # Add hover effect
+        add_btn.bind('<Enter>', lambda e: add_btn.config(bg='#229954'))
+        add_btn.bind('<Leave>', lambda e: add_btn.config(bg='#27ae60'))
         
         # Don't add initial segment - wait for file selection
 
@@ -99,9 +108,10 @@ class FileSegmentEditor:
             if not self.segments:
                 self.add_segment()
             else:
-                # Update all segments with new duration
+                # Update all segments with new duration and refresh thumbnails
                 for segment in self.segments:
                     segment.update_end_time()
+                    segment.refresh_thumbnails()
     
     def generate_output_filename(self, input_path):
         """Generate output filename based on input file"""
@@ -194,3 +204,26 @@ class FileSegmentEditor:
         """Remove this editor from the parent"""
         if self.remove_callback:
             self.remove_callback(self)
+    
+    def focus_next_segment(self, current_segment):
+        """Focus the start field of the next segment, or create a new segment"""
+        try:
+            current_index = self.segments.index(current_segment)
+            
+            # Check if there's a next segment
+            if current_index + 1 < len(self.segments):
+                # Focus next segment's start field
+                next_segment = self.segments[current_index + 1]
+                next_segment.start_entry.focus_set()
+                next_segment.start_entry.select_range(0, tk.END)
+            else:
+                # No next segment - create a new one
+                self.add_segment()
+                # Focus the newly created segment's start field
+                if self.segments:
+                    new_segment = self.segments[-1]
+                    new_segment.start_entry.focus_set()
+                    new_segment.start_entry.select_range(0, tk.END)
+        except ValueError:
+            # Current segment not in list (shouldn't happen)
+            pass

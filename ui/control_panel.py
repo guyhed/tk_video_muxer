@@ -45,6 +45,9 @@ class ControlPanel:
                               highlightthickness=0,
                               activebackground='#2980b9', activeforeground='white')
         browse_btn.pack(side=tk.LEFT, padx=8)
+        # Add hover effect - darken background, keep text color
+        browse_btn.bind('<Enter>', lambda e: browse_btn.config(bg='#2980b9'))
+        browse_btn.bind('<Leave>', lambda e: browse_btn.config(bg=accent_color))
 
         # Start muxing button with border frame
         button_row = tk.Frame(self.frame, bg=bg_color)
@@ -58,8 +61,11 @@ class ControlPanel:
                                        bg=bg_color, fg=success_color, bd=2, relief=tk.FLAT,
                                        font=('Segoe UI', 12, 'bold'), cursor='hand2',
                                        highlightthickness=0, padx=30, pady=8,
-                                       activebackground=bg_color, activeforeground='#229954')
+                                       activebackground='#1e1e1e', activeforeground=success_color)
         self.start_button.pack(padx=2, pady=2)
+        # Add hover effect - darken background, keep text color
+        self.start_button.bind('<Enter>', lambda e: self.start_button.config(bg='#1e1e1e'))
+        self.start_button.bind('<Leave>', lambda e: self.start_button.config(bg=bg_color))
 
         # Progress bar and labels
         progress_frame = tk.Frame(self.frame, bg=bg_color)
