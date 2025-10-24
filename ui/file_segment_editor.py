@@ -10,40 +10,64 @@ from config_manager import ConfigManager
 
 class FileSegmentEditor:
     def __init__(self, parent, set_output_path_callback=None, remove_callback=None):
-        self.frame = tk.Frame(parent, bg='pink', bd=0)
+        # Modern color scheme
+        self.bg_color = '#2b2b2b'  # Dark background
+        self.fg_color = '#e0e0e0'  # Light text
+        self.accent_color = '#3498db'  # Blue accent
+        self.entry_bg = '#3c3c3c'  # Dark entry background
+        
+        self.frame = tk.Frame(parent, bg=self.bg_color, bd=0, relief=tk.FLAT)
         self.file_path = tk.StringVar()
         self.video_duration = None  # Store video duration in seconds
         self.set_output_path_callback = set_output_path_callback
         self.remove_callback = remove_callback
         self.config = ConfigManager()
 
+        # Add subtle border/shadow effect
+        self.frame.configure(highlightbackground='#1a1a1a', highlightthickness=1)
+
         # Header row with file selection and remove button
-        header_frame = tk.Frame(self.frame, bg='pink', bd=0)
-        header_frame.pack(fill='x', pady=5, padx=15)
+        header_frame = tk.Frame(self.frame, bg=self.bg_color, bd=0)
+        header_frame.pack(fill='x', pady=10, padx=15)
         
         # File selection
-        file_row = tk.Frame(header_frame, bg='pink', bd=0)
+        file_row = tk.Frame(header_frame, bg=self.bg_color, bd=0)
         file_row.pack(side=tk.LEFT, fill='x', expand=True)
         
-        tk.Label(file_row, text="Select File:", bg='pink', bd=0).pack(side=tk.LEFT, padx=10, pady=5)
-        tk.Entry(file_row, textvariable=self.file_path, width=50, bd=0).pack(side=tk.LEFT, padx=5, pady=5)
-        tk.Button(file_row, text="Browse", command=self.browse_file, bd=0).pack(side=tk.LEFT, padx=10, pady=5)
+        tk.Label(file_row, text="📁 Video File:", bg=self.bg_color, fg=self.fg_color, 
+                font=('Segoe UI', 10)).pack(side=tk.LEFT, padx=10, pady=5)
         
-        # Remove editor button with red X on transparent background
+        entry = tk.Entry(file_row, textvariable=self.file_path, width=50, 
+                        bg=self.entry_bg, fg=self.fg_color, bd=0, 
+                        insertbackground=self.fg_color, relief=tk.FLAT,
+                        font=('Segoe UI', 9))
+        entry.pack(side=tk.LEFT, padx=5, pady=5, ipady=5)
+        
+        browse_btn = tk.Button(file_row, text="Browse", command=self.browse_file, 
+                              bg=self.accent_color, fg='white', bd=0, relief=tk.FLAT,
+                              font=('Segoe UI', 9, 'bold'), cursor='hand2',
+                              padx=15, pady=5, activebackground='#2980b9')
+        browse_btn.pack(side=tk.LEFT, padx=10, pady=5)
+        
+        # Remove editor button with red X
         remove_btn = tk.Button(header_frame, text="✕", command=self.remove_editor, 
-                              bg='pink', fg='red', font=('Arial', 16, 'bold'),
+                              bg=self.bg_color, fg='#e74c3c', font=('Arial', 18, 'bold'),
                               width=2, height=1, bd=0, relief=tk.FLAT,
                               highlightthickness=0, padx=0, pady=0,
-                              activebackground='pink', activeforeground='darkred',
+                              activebackground=self.bg_color, activeforeground='#c0392b',
                               cursor='hand2')
         remove_btn.pack(side=tk.RIGHT, padx=5, pady=5)
 
         # Time segments
-        self.segments_frame = tk.Frame(self.frame, bg='pink', bd=0)
+        self.segments_frame = tk.Frame(self.frame, bg=self.bg_color, bd=0)
         self.segments_frame.pack(fill='x', pady=5, padx=15)
         self.segments = []
 
-        tk.Button(self.frame, text="Add Segment", command=self.add_segment, bd=0).pack(pady=10, padx=15)
+        add_btn = tk.Button(self.frame, text="+ Add Segment", command=self.add_segment, 
+                           bg='#27ae60', fg='white', bd=0, relief=tk.FLAT,
+                           font=('Segoe UI', 9, 'bold'), cursor='hand2',
+                           padx=15, pady=5, activebackground='#229954')
+        add_btn.pack(pady=10, padx=15)
         
         # Don't add initial segment - wait for file selection
 

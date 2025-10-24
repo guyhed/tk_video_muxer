@@ -17,40 +17,81 @@ class ControlPanel:
         self.get_editors_callback = get_editors_callback
         self.root = parent.winfo_toplevel()  # Get root window for threading
         
+        # Modern colors
+        bg_color = '#2b2b2b'
+        fg_color = '#e0e0e0'
+        entry_bg = '#3c3c3c'
+        accent_color = '#3498db'
+        success_color = '#27ae60'
+        
         # Create main frame for the panel
-        self.frame = tk.Frame(parent, bd=2, relief=tk.GROOVE, bg='lightgray')
+        self.frame = tk.Frame(parent, bd=0, relief=tk.FLAT, bg=bg_color)
         
         # Output file selection
-        output_row = tk.Frame(self.frame, bg='lightgray')
-        output_row.pack(fill='x', pady=10, padx=10)
+        output_row = tk.Frame(self.frame, bg=bg_color)
+        output_row.pack(fill='x', pady=8, padx=15)
         
-        tk.Label(output_row, text="Output File:", bg='lightgray').pack(side=tk.LEFT, padx=5)
+        tk.Label(output_row, text="💾 Output File:", bg=bg_color, fg=fg_color,
+                font=('Segoe UI', 10)).pack(side=tk.LEFT, padx=8)
         self.output_path = tk.StringVar()
-        tk.Entry(output_row, textvariable=self.output_path, width=50).pack(side=tk.LEFT, padx=5)
-        tk.Button(output_row, text="Browse", command=self.browse_output).pack(side=tk.LEFT, padx=5)
-
-        # Start muxing button
-        button_row = tk.Frame(self.frame, bg='lightgray')
-        button_row.pack(fill='x', pady=5, padx=10)
+        output_entry = tk.Entry(output_row, textvariable=self.output_path, width=50,
+                               bg=entry_bg, fg=fg_color, bd=0, relief=tk.FLAT,
+                               insertbackground=fg_color, font=('Segoe UI', 9))
+        output_entry.pack(side=tk.LEFT, padx=5, ipady=5)
         
-        self.start_button = tk.Button(button_row, text="Start Muxing", command=self.start_muxing, 
-                                       bg='green', fg='white', font=('Arial', 12, 'bold'))
-        self.start_button.pack(pady=5)
+        browse_btn = tk.Button(output_row, text="📁", command=self.browse_output,
+                              bg=accent_color, fg='white', bd=0, relief=tk.FLAT,
+                              font=('Arial', 12), cursor='hand2', width=3,
+                              highlightthickness=0,
+                              activebackground='#2980b9', activeforeground='white')
+        browse_btn.pack(side=tk.LEFT, padx=8)
+
+        # Start muxing button with border frame
+        button_row = tk.Frame(self.frame, bg=bg_color)
+        button_row.pack(fill='x', pady=5, padx=15)
+        
+        # Border frame for the button
+        button_border = tk.Frame(button_row, bg=success_color, bd=0)
+        button_border.pack(pady=3)
+        
+        self.start_button = tk.Button(button_border, text="▶ Start Muxing", command=self.start_muxing, 
+                                       bg=bg_color, fg=success_color, bd=2, relief=tk.FLAT,
+                                       font=('Segoe UI', 12, 'bold'), cursor='hand2',
+                                       highlightthickness=0, padx=30, pady=8,
+                                       activebackground=bg_color, activeforeground='#229954')
+        self.start_button.pack(padx=2, pady=2)
 
         # Progress bar and labels
-        progress_frame = tk.Frame(self.frame, bg='lightgray')
-        progress_frame.pack(fill='x', pady=10, padx=10)
+        progress_frame = tk.Frame(self.frame, bg=bg_color)
+        progress_frame.pack(fill='x', pady=8, padx=15)
+        
+        # Status row with inline percentage
+        status_row = tk.Frame(progress_frame, bg=bg_color)
+        status_row.pack(fill='x', pady=(0, 5))
         
         # Progress label (status message)
-        self.progress_label = tk.Label(progress_frame, text="Ready", bg='lightgray', font=('Arial', 10))
-        self.progress_label.pack(pady=5)
+        self.progress_label = tk.Label(status_row, text="Ready", bg=bg_color, fg=fg_color,
+                                       font=('Segoe UI', 10))
+        self.progress_label.pack(side=tk.LEFT)
         
-        # Percentage label (shown above progress bar, hidden by default)
-        self.percentage_label = tk.Label(progress_frame, text="", bg='lightgray', font=('Arial', 12, 'bold'))
-        self.percentage_label.pack(pady=2)
+        # Percentage label (shown inline with status, hidden by default)
+        self.percentage_label = tk.Label(status_row, text="", bg=bg_color, fg=accent_color,
+                                        font=('Segoe UI', 10, 'bold'))
+        self.percentage_label.pack(side=tk.LEFT, padx=10)
         
-        self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate', length=400, maximum=100)
-        self.progress_bar.pack(fill='x', pady=5)
+        # Style the progress bar
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('Custom.Horizontal.TProgressbar',
+                       troughcolor='#3c3c3c',
+                       background=accent_color,
+                       bordercolor=bg_color,
+                       lightcolor=accent_color,
+                       darkcolor=accent_color)
+        
+        self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate', length=400, maximum=100,
+                                           style='Custom.Horizontal.TProgressbar')
+        self.progress_bar.pack(fill='x', pady=(0, 5))
     
     def browse_output(self):
         """Open file dialog to select output file"""
@@ -122,8 +163,8 @@ class ControlPanel:
         """
         self.root.after(0, lambda: self.progress_bar.config(value=value))
         self.root.after(0, lambda: self.progress_label.config(text=text))
-        # Only show percentage if value > 0 (active muxing)
+        # Show percentage inline if value > 0 (active muxing)
         if value > 0:
-            self.root.after(0, lambda: self.percentage_label.config(text=f"{value}%"))
+            self.root.after(0, lambda: self.percentage_label.config(text=f"({value}%)"))
         else:
             self.root.after(0, lambda: self.percentage_label.config(text=""))

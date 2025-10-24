@@ -4,23 +4,41 @@ import re
 class TimeSegmentRow:
     def __init__(self, parent, editor, start_time="00:00"):
         self.editor = editor
-        self.frame = tk.Frame(parent, bg='pink', bd=0)
+        
+        # Modern colors matching parent editor
+        bg_color = '#2b2b2b'
+        fg_color = '#e0e0e0'
+        entry_bg = '#3c3c3c'
+        
+        self.frame = tk.Frame(parent, bg=bg_color, bd=0)
         self.start_var = tk.StringVar(value=start_time)
         self.end_var = tk.StringVar()
         
         # Add validation
         vcmd = (parent.register(self.validate_time), '%P')
         
-        tk.Label(self.frame, text="Start:", bg='pink', bd=0).pack(side=tk.LEFT, padx=5, pady=3)
-        self.start_entry = tk.Entry(self.frame, textvariable=self.start_var, width=10, bd=0, validate='key', validatecommand=vcmd)
-        self.start_entry.pack(side=tk.LEFT, padx=5, pady=3)
+        tk.Label(self.frame, text="⏱ Start:", bg=bg_color, fg=fg_color, 
+                font=('Segoe UI', 9)).pack(side=tk.LEFT, padx=8, pady=5)
+        self.start_entry = tk.Entry(self.frame, textvariable=self.start_var, width=10, 
+                                    bg=entry_bg, fg=fg_color, bd=0, relief=tk.FLAT,
+                                    insertbackground=fg_color, font=('Consolas', 9),
+                                    validate='key', validatecommand=vcmd)
+        self.start_entry.pack(side=tk.LEFT, padx=5, pady=5, ipady=3)
         
-        tk.Label(self.frame, text="End:", bg='pink', bd=0).pack(side=tk.LEFT, padx=5, pady=3)
-        self.end_entry = tk.Entry(self.frame, textvariable=self.end_var, width=10, bd=0, validate='key', validatecommand=vcmd)
-        self.end_entry.pack(side=tk.LEFT, padx=5, pady=3)
+        tk.Label(self.frame, text="End:", bg=bg_color, fg=fg_color, 
+                font=('Segoe UI', 9)).pack(side=tk.LEFT, padx=8, pady=5)
+        self.end_entry = tk.Entry(self.frame, textvariable=self.end_var, width=10, 
+                                  bg=entry_bg, fg=fg_color, bd=0, relief=tk.FLAT,
+                                  insertbackground=fg_color, font=('Consolas', 9),
+                                  validate='key', validatecommand=vcmd)
+        self.end_entry.pack(side=tk.LEFT, padx=5, pady=5, ipady=3)
         
-        self.remove_button = tk.Button(self.frame, text="Remove", command=self.remove, bd=0)
-        self.remove_button.pack(side=tk.LEFT, padx=10, pady=3)
+        self.remove_button = tk.Button(self.frame, text="✕", command=self.remove, 
+                                       bg=bg_color, fg='#e74c3c', bd=0, relief=tk.FLAT,
+                                       font=('Arial', 12, 'bold'), cursor='hand2',
+                                       highlightthickness=0, width=2,
+                                       activebackground=bg_color, activeforeground='#c0392b')
+        self.remove_button.pack(side=tk.LEFT, padx=10, pady=5)
         
         # Initialize end time with video duration if available
         self.update_end_time()

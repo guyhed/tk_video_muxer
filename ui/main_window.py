@@ -5,12 +5,16 @@ from .control_panel import ControlPanel
 class MainWindow:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("My Tkinter App")
-        self.root.geometry("900x700")
+        self.root.title("Video Segment Editor")
+        self.root.geometry("950x750")
         self.root.iconphoto(False, tk.PhotoImage(file="assets/icon.png"))
 
+        # Modern dark theme
+        bg_color = '#1e1e1e'
+        self.root.configure(bg=bg_color)
+
         # Create main container with two sections
-        main_container = tk.Frame(self.root)
+        main_container = tk.Frame(self.root, bg=bg_color)
         main_container.pack(fill='both', expand=True)
 
         # Lower section - control panel (create first to get callback)

@@ -14,13 +14,30 @@ class EditorPanel:
         """
         self.set_output_path_callback = set_output_path_callback
         
+        # Modern dark theme colors
+        bg_color = '#1e1e1e'
+        scroll_bg = '#2b2b2b'
+        accent_color = '#3498db'
+        
         # Create main frame for the panel
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=bg_color)
+        
+        # Add button at the top left corner (modern style)
+        button_container = tk.Frame(self.frame, bg=bg_color)
+        button_container.pack(side="top", fill="x", padx=10, pady=10)
+        
+        add_editor_btn = tk.Button(button_container, text="➕ Add File", 
+                                   command=self.add_editor,
+                                   bg=accent_color, fg='white', bd=0, relief=tk.FLAT,
+                                   font=('Segoe UI', 10, 'bold'), cursor='hand2',
+                                   highlightthickness=0, padx=15, pady=6,
+                                   activebackground='#2980b9', activeforeground='white')
+        add_editor_btn.pack(side="left")
         
         # Create a canvas with scrollbar for editors
-        canvas = tk.Canvas(self.frame)
+        canvas = tk.Canvas(self.frame, bg=bg_color, highlightthickness=0, bd=0)
         scrollbar = tk.Scrollbar(self.frame, orient="vertical", command=canvas.yview)
-        self.scrollable_frame = tk.Frame(canvas)
+        self.scrollable_frame = tk.Frame(canvas, bg=scroll_bg)
 
         self.scrollable_frame.bind(
             "<Configure>",
@@ -40,10 +57,6 @@ class EditorPanel:
 
         # List to hold FileSegmentEditor instances
         self.editors = []
-
-        # Add button to create new editors
-        add_editor_btn = tk.Button(self.scrollable_frame, text="Add File Editor", command=self.add_editor)
-        add_editor_btn.pack(pady=10)
 
         # Add initial editor
         self.add_editor()
