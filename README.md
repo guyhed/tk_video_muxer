@@ -1,4 +1,4 @@
-# Video Segment Editor
+# tk_video_muxer
 
 A Linux application for cutting and merging video segments with compression.
 
@@ -80,7 +80,7 @@ sudo pacman -S mkvtoolnix ffmpeg
 
 ### Configuration
 
-Settings are stored in `~/.config/video_segment_editor/config.json`:
+Settings are stored in `~/.config/tk_video_muxer/config.json`:
 - Last used input folder path
 - (Future settings will be added here)
 

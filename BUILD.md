@@ -1,23 +1,28 @@
-# Video Segment Editor - Build Instructions
+# tk_video_muxer - Build Instructions
 
 ## Building a Linux Executable
 
 ### Prerequisites
 - Python 3.8 or higher
-- pip package manager
+- python3-venv package
 - mkvmerge and ffmpeg installed on your system
 
 ### Build Steps
 
-1. **Install dependencies:**
+1. **Make the build script executable (first time only):**
    ```bash
-   pip install -r requirements.txt
+   chmod +x build_linux.sh
    ```
 
 2. **Run the build script:**
    ```bash
    ./build_linux.sh
    ```
+   
+   The script will automatically:
+   - Create a virtual environment if it doesn't exist
+   - Install all required dependencies (Pillow, PyInstaller)
+   - Build the executable
 
 3. **Find your executable:**
    The executable will be created at `dist/VideoSegmentEditor`

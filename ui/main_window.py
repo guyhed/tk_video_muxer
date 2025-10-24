@@ -5,7 +5,7 @@ from .control_panel import ControlPanel
 class MainWindow:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Video Segment Editor")
+        self.root.title("tk_video_muxer")
         self.root.geometry("950x750")
         self.root.iconphoto(False, tk.PhotoImage(file="assets/icon.png"))
 
