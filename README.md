@@ -1,6 +1,8 @@
 # Video Segment Editor
 
-A modern Linux application for cutting and merging video segments with compression.
+A Linux application for cutting and merging video segments with compression.
+
+**Note:** This entire project was developed using AI assistance - not a single character of code was manually typed by a human developer. Everything from the UI design to the video processing pipeline was created through natural language instructions.
 
 ## Features
 
@@ -9,7 +11,7 @@ A modern Linux application for cutting and merging video segments with compressi
 - **Video Thumbnails**: Preview frames at segment start/end times
 - **Smart Processing**: Cut segments using mkvmerge, then compress with ffmpeg
 - **Progress Tracking**: Real-time progress for cutting and compression phases
-- **Modern UI**: Clean dark theme with intuitive controls
+- **Dark Theme UI**: Clean interface with intuitive controls
 - **Keyboard Navigation**: Press Enter to navigate between time fields
 
 ## System Requirements
