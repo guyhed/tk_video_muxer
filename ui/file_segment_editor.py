@@ -26,57 +26,62 @@ class FileSegmentEditor:
         # Add subtle border/shadow effect
         self.frame.configure(highlightbackground='#1a1a1a', highlightthickness=1)
 
-        # Header row with file selection and remove button
+        # Header with file selection and remove button
         header_frame = tk.Frame(self.frame, bg=self.bg_color, bd=0)
-        header_frame.pack(fill='x', pady=10, padx=15)
+        header_frame.pack(fill='x', padx=10, pady=10)
         
-        # File selection
+        # File selection row (left side)
         file_row = tk.Frame(header_frame, bg=self.bg_color, bd=0)
         file_row.pack(side=tk.LEFT, fill='x', expand=True)
         
         tk.Label(file_row, text="📁 Video File:", bg=self.bg_color, fg=self.fg_color, 
-                font=('Segoe UI', 10)).pack(side=tk.LEFT, padx=10, pady=5)
+                font=('Segoe UI', 10)).pack(side=tk.LEFT, padx=(0, 10))
         
-        entry = tk.Entry(file_row, textvariable=self.file_path, width=50, 
+        entry = tk.Entry(file_row, textvariable=self.file_path, width=50,
                         bg=self.entry_bg, fg=self.fg_color, bd=0, 
                         insertbackground=self.fg_color, relief=tk.FLAT,
                         font=('Segoe UI', 9))
-        entry.pack(side=tk.LEFT, padx=5, pady=5, ipady=5)
+        entry.pack(side=tk.LEFT, padx=5, ipady=5)
         
         browse_btn = tk.Button(file_row, text="Browse", command=self.browse_file, 
                               bg=self.accent_color, fg='white', bd=0, relief=tk.FLAT,
                               font=('Segoe UI', 9, 'bold'), cursor='hand2',
                               padx=15, pady=5, activebackground='#2980b9', activeforeground='white')
-        browse_btn.pack(side=tk.LEFT, padx=10, pady=5)
+        browse_btn.pack(side=tk.LEFT, padx=10)
         # Add hover effect
         browse_btn.bind('<Enter>', lambda e: browse_btn.config(bg='#2980b9'))
         browse_btn.bind('<Leave>', lambda e: browse_btn.config(bg=self.accent_color))
         
-        # Remove editor button with red X
+        # Remove editor button (top right corner)
         remove_btn = tk.Button(header_frame, text="✕", command=self.remove_editor, 
                               bg=self.bg_color, fg='#e74c3c', font=('Arial', 18, 'bold'),
                               width=2, height=1, bd=0, relief=tk.FLAT,
-                              highlightthickness=0, padx=0, pady=0,
-                              activebackground='#1e1e1e', activeforeground='#e74c3c',
-                              cursor='hand2')
-        remove_btn.pack(side=tk.RIGHT, padx=5, pady=5)
+                              highlightthickness=0, cursor='hand2',
+                              activebackground='#1e1e1e', activeforeground='#e74c3c')
+        remove_btn.pack(side=tk.RIGHT, padx=5)
         # Add hover effect
         remove_btn.bind('<Enter>', lambda e: remove_btn.config(bg='#1e1e1e'))
         remove_btn.bind('<Leave>', lambda e: remove_btn.config(bg=self.bg_color))
 
-        # Time segments
-        self.segments_frame = tk.Frame(self.frame, bg=self.bg_color, bd=0)
-        self.segments_frame.pack(fill='x', pady=5, padx=15)
+        # Segments section
+        segments_section = tk.Frame(self.frame, bg=self.bg_color, bd=0)
+        segments_section.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+        
+        # Time segments container
+        self.segments_frame = tk.Frame(segments_section, bg=self.bg_color, bd=0)
+        self.segments_frame.pack(fill='both', expand=True)
         self.segments = []
-
-        add_btn = tk.Button(self.frame, text="+ Add Segment", command=self.add_segment, 
-                           bg='#27ae60', fg='white', bd=0, relief=tk.FLAT,
+        
+        # Add segment button at the bottom (transparent, aligned right)
+        add_btn = tk.Button(segments_section, text="+ Add Segment", command=self.add_segment, 
+                           bg=self.bg_color, fg='#27ae60', bd=0, relief=tk.FLAT,
                            font=('Segoe UI', 9, 'bold'), cursor='hand2',
-                           padx=15, pady=5, activebackground='#229954', activeforeground='white')
-        add_btn.pack(pady=10, padx=15)
-        # Add hover effect
-        add_btn.bind('<Enter>', lambda e: add_btn.config(bg='#229954'))
-        add_btn.bind('<Leave>', lambda e: add_btn.config(bg='#27ae60'))
+                           highlightthickness=0, padx=15, pady=5,
+                           activebackground=self.bg_color, activeforeground='#27ae60')
+        add_btn.pack(side=tk.RIGHT, pady=(10, 0))
+        # Add hover effect - darken text slightly
+        add_btn.bind('<Enter>', lambda e: add_btn.config(fg='#229954'))
+        add_btn.bind('<Leave>', lambda e: add_btn.config(fg='#27ae60'))
         
         # Don't add initial segment - wait for file selection
 
