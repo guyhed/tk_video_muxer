@@ -1,13 +1,26 @@
 import tkinter as tk
+import sys
+import os
 from .editor_panel import EditorPanel
 from .control_panel import ControlPanel
+
+
+def _asset(relative_path):
+    """Resolve a bundled asset path whether running from source or PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller extracts bundled data to a temp folder stored in _MEIPASS
+        return os.path.join(sys._MEIPASS, relative_path)
+    # Running from source: paths are relative to the project root (one level up)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(project_root, relative_path)
+
 
 class MainWindow:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("tk_video_muxer")
         self.root.geometry("950x750")
-        self.root.iconphoto(False, tk.PhotoImage(file="assets/icon.png"))
+        self.root.iconphoto(False, tk.PhotoImage(file=_asset("assets/icon.png")))
 
         # Modern dark theme
         bg_color = '#1e1e1e'

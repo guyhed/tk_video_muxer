@@ -1,10 +1,23 @@
 import json
 import os
+import sys
+
+
+def _config_dir():
+    """Return the directory where config.json should live (next to the executable)."""
+    if getattr(sys, 'frozen', False):
+        # PyInstaller bundle: use the directory containing the executable
+        return os.path.dirname(sys.executable)
+    # Running from source: project root (parent of this file)
+    return os.path.dirname(os.path.abspath(__file__))
+
 
 class ConfigManager:
     """Manages application configuration"""
-    
-    def __init__(self, config_file='config.json'):
+
+    def __init__(self, config_file=None):
+        if config_file is None:
+            config_file = os.path.join(_config_dir(), 'config.json')
         """
         Initialize the ConfigManager
         
