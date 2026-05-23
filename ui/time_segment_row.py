@@ -226,21 +226,26 @@ class TimeSegmentRow:
             self.update_thumbnail_placeholder(field)
             return
         
-        # Extract thumbnail in background thread
+        # Background thread: ffmpeg + PIL → base64 PNG string (no tkinter calls)
+        # Main thread (after()): tk.PhotoImage(data=...) — pure tkinter, no
+        # PIL/Tk integration, works reliably in PyInstaller bundles.
         def extract_and_update():
-            thumbnail = ThumbnailExtractor.extract_thumbnail(video_path, time_str)
-            
-            # Update UI in main thread
-            if thumbnail:
-                if field == 'start':
-                    self.start_thumbnail = thumbnail
-                    self.start_thumb_label.config(image=thumbnail)
+            b64 = ThumbnailExtractor.extract_thumbnail(video_path, time_str)
+
+            def apply():
+                if b64:
+                    photo = tk.PhotoImage(data=b64)   # main thread ✓
+                    if field == 'start':
+                        self.start_thumbnail = photo
+                        self.start_thumb_label.config(image=photo)
+                    else:
+                        self.end_thumbnail = photo
+                        self.end_thumb_label.config(image=photo)
                 else:
-                    self.end_thumbnail = thumbnail
-                    self.end_thumb_label.config(image=thumbnail)
-            else:
-                self.update_thumbnail_placeholder(field)
-        
+                    self.update_thumbnail_placeholder(field)
+
+            self.frame.after(0, apply)
+
         # Run in thread to avoid blocking UI
         thread = threading.Thread(target=extract_and_update, daemon=True)
         thread.start()

@@ -1,12 +1,43 @@
 import subprocess
 import os
+import sys
+import shutil
 import tempfile
+import base64
+import io
 from PIL import Image, ImageTk
 import tkinter as tk
 
+# Resolve ffmpeg once at import time so subprocess always gets the full path
+_FFMPEG = shutil.which('ffmpeg') or '/usr/bin/ffmpeg'
+
+
+
+def _subprocess_env():
+    """
+    Return an environment dict safe for launching external processes from a
+    PyInstaller bundle.
+
+    PyInstaller prepends its temp extraction dir to LD_LIBRARY_PATH so its own
+    bundled shared libs are found.  That modified path leaks into every
+    subprocess call — ffmpeg then loads the wrong library versions and fails
+    silently.  We restore the original value that PyInstaller saved before it
+    made the change.
+    """
+    env = os.environ.copy()
+    if hasattr(sys, '_MEIPASS'):
+        lp_key = 'LD_LIBRARY_PATH'
+        original = env.get(lp_key + '_ORIG')   # saved by PyInstaller bootloader
+        if original is not None:
+            env[lp_key] = original
+        else:
+            env.pop(lp_key, None)   # no original → remove the injected value
+    return env
+
+
 class ThumbnailExtractor:
     """Extract video frame thumbnails using ffmpeg"""
-    
+
     @staticmethod
     def time_to_seconds(time_str):
         """Convert time string (hh:mm:ss or mm:ss) to seconds"""
@@ -45,20 +76,17 @@ class ThumbnailExtractor:
         try:
             # Convert time to seconds
             seconds = ThumbnailExtractor.time_to_seconds(timestamp_str)
-            
+
             # Validate that we have a valid time
             if seconds < 0:
                 return None
-            
+
             # Create temporary file for the thumbnail
             with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp_file:
                 tmp_path = tmp_file.name
-            
-            # Use ffmpeg to extract frame at timestamp
-            # -ss: seek to position, -i: input file, -frames:v 1: extract 1 frame
-            # -s: scale to size, -q:v 2: quality (2 is high)
+
             cmd = [
-                'ffmpeg',
+                _FFMPEG,
                 '-ss', str(seconds),
                 '-i', video_path,
                 '-frames:v', '1',
@@ -67,37 +95,35 @@ class ThumbnailExtractor:
                 '-y',  # Overwrite output file
                 tmp_path
             ]
-            
-            # Run ffmpeg, suppress output
-            result = subprocess.run(cmd, 
-                                   capture_output=True, 
-                                   text=True,
-                                   timeout=5)
-            
+
+            # Run ffmpeg, suppress output.
+            # Pass a clean env so PyInstaller's LD_LIBRARY_PATH injection
+            # does not cause ffmpeg to load the wrong system libraries.
+            result = subprocess.run(cmd,
+                                    capture_output=True,
+                                    text=True,
+                                    timeout=5,
+                                    env=_subprocess_env())
+
             # Check if file was created and has content
             if result.returncode == 0 and os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
                 try:
-                    # Load the image and convert to PhotoImage
+                    # Encode the image as a base64 PNG in the background thread.
+                    # The caller uses tk.PhotoImage(data=...) on the main thread —
+                    # no PIL/Tk integration required, works in any environment.
                     img = Image.open(tmp_path)
-                    photo = ImageTk.PhotoImage(img)
-                    
-                    # Clean up temp file
+                    buf = io.BytesIO()
+                    img.save(buf, format='PNG')
                     os.unlink(tmp_path)
-                    
-                    return photo
+                    return base64.b64encode(buf.getvalue()).decode('ascii')
                 except Exception as img_error:
-                    # Image file was created but is invalid/corrupted
                     if os.path.exists(tmp_path):
                         os.unlink(tmp_path)
-                    # Only print error if it's not a common case (empty/invalid image)
                     print(f"Warning: Could not load thumbnail image: {img_error}")
                     return None
             else:
-                # ffmpeg failed or file wasn't created properly
-                # Clean up temp file if it exists
                 if os.path.exists(tmp_path):
                     os.unlink(tmp_path)
-                # Don't print error - this is normal when timestamp is invalid or out of range
                 return None
                 
         except subprocess.TimeoutExpired:
