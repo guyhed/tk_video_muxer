@@ -1,6 +1,7 @@
 import subprocess
 import os
 import tempfile
+from .external_tools import FFMPEG, MKVMERGE, subprocess_env
 
 class VideoMuxer:
     """Handles video cutting, concatenation, and compression"""
@@ -73,13 +74,14 @@ class VideoMuxer:
                     # Use mkvmerge to split with timestamp format
                     # Format: --split parts:START-END where times are in format HH:MM:SS.nnnnnnnnn or seconds
                     cmd = [
-                        'mkvmerge',
+                        MKVMERGE,
                         '-o', output_segment,
                         '--split', f'parts:{start_seconds}s-{end_seconds}s',
                         input_file
                     ]
                     
-                    result = subprocess.run(cmd, capture_output=True, text=True)
+                    result = subprocess.run(cmd, capture_output=True, text=True,
+                                            env=subprocess_env())
                     if result.returncode == 0 or result.returncode == 1:  # mkvmerge returns 1 for warnings
                         segment_files.append(output_segment)
                         current_segment += 1
@@ -117,7 +119,7 @@ class VideoMuxer:
             self.update_progress(0, f"Starting compression (total: {int(total_duration_seconds)}s)...")
             
             cmd = [
-                'ffmpeg',
+                FFMPEG,
                 '-f', 'concat',
                 '-safe', '0',
                 '-i', concat_file,
@@ -131,12 +133,15 @@ class VideoMuxer:
             ]
             
             # Start ffmpeg process
+            # Pass a clean env so PyInstaller's LD_LIBRARY_PATH injection does not
+            # make ffmpeg load the bundled shared libs (fails with code 127).
             process = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, 
-                                      text=True, bufsize=1)
+                                      text=True, bufsize=1, env=subprocess_env())
             
             # Use calculated duration instead of waiting for ffmpeg
             duration_seconds = total_duration_seconds if total_duration_seconds > 0 else None
             last_progress = 0
+            recent_output = []   # keep the tail of ffmpeg's output for error reporting
             
             # Read stdout line by line (stderr is redirected to stdout)
             for line in iter(process.stdout.readline, ''):
@@ -145,6 +150,9 @@ class VideoMuxer:
                 
                 line = line.strip()
                 print(f"FFMPEG: {line}")  # Print to console for debugging
+                recent_output.append(line)
+                if len(recent_output) > 20:
+                    recent_output.pop(0)
                 
                 # Track progress using time= format
                 if 'time=' in line and duration_seconds:
@@ -177,7 +185,15 @@ class VideoMuxer:
             process.wait()
             
             if process.returncode != 0:
-                raise Exception(f"ffmpeg error: return code {process.returncode}")
+                detail = '\n'.join(recent_output) or '(no output)'
+                hint = ''
+                if process.returncode == 127:
+                    # 127 means ffmpeg never got past the dynamic linker: either it
+                    # is not installed, or a bundled lib shadowed a system one.
+                    hint = (f"\n\nffmpeg could not be started ({FFMPEG}). "
+                            "Check that ffmpeg is installed and on your PATH.")
+                raise Exception(f"ffmpeg error: return code {process.returncode}"
+                                f"{hint}\n\n{detail}")
             
             self.update_progress(100, "Complete!")
             return True

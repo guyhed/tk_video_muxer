@@ -1,38 +1,11 @@
 import subprocess
 import os
-import sys
-import shutil
 import tempfile
 import base64
 import io
 from PIL import Image, ImageTk
 import tkinter as tk
-
-# Resolve ffmpeg once at import time so subprocess always gets the full path
-_FFMPEG = shutil.which('ffmpeg') or '/usr/bin/ffmpeg'
-
-
-
-def _subprocess_env():
-    """
-    Return an environment dict safe for launching external processes from a
-    PyInstaller bundle.
-
-    PyInstaller prepends its temp extraction dir to LD_LIBRARY_PATH so its own
-    bundled shared libs are found.  That modified path leaks into every
-    subprocess call — ffmpeg then loads the wrong library versions and fails
-    silently.  We restore the original value that PyInstaller saved before it
-    made the change.
-    """
-    env = os.environ.copy()
-    if hasattr(sys, '_MEIPASS'):
-        lp_key = 'LD_LIBRARY_PATH'
-        original = env.get(lp_key + '_ORIG')   # saved by PyInstaller bootloader
-        if original is not None:
-            env[lp_key] = original
-        else:
-            env.pop(lp_key, None)   # no original → remove the injected value
-    return env
+from .external_tools import FFMPEG as _FFMPEG, subprocess_env as _subprocess_env
 
 
 class ThumbnailExtractor:

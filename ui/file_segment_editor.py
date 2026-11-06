@@ -141,12 +141,14 @@ class FileSegmentEditor:
         """Get video duration using ffprobe or moviepy"""
         try:
             import subprocess
+            from .external_tools import FFPROBE, subprocess_env
             result = subprocess.run(
-                ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                [FFPROBE, '-v', 'error', '-show_entries', 'format=duration',
                  '-of', 'default=noprint_wrappers=1:nokey=1', file_path],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                env=subprocess_env()
             )
             if result.returncode == 0:
                 self.video_duration = float(result.stdout.strip())
